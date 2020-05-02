@@ -85,7 +85,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ins_interrupt_pin),ins_interrupt,RISING);
   attachInterrupt(digitalPinToInterrupt(bpm_interrupt_pin),bpm_interrupt,RISING);
   attachInterrupt(digitalPinToInterrupt(s1_pin),ratio_1, RISING);
-  attachInterrupt(digitalPinTo  Interrupt(s3_pin),ratio_3, RISING);
+  attachInterrupt(digitalPinToInterrupt(s3_pin),ratio_3, RISING);
   vol_steps=500;
   //attachInterrupt(digitalPinToInterrupt(12),homing,RISING);
 //  for(int s=0; s<800; s++){//searching for home
@@ -130,8 +130,8 @@ void move_cw(int steps){
 //      move_ccw(400);
 //      break;
 //    }
-    if(steps_taken==map(ins_delay,0,1023,0,800)){
-      move_ccw(map(ins_delay,0,1023,0,800));
+    if(steps_taken==map(ins_delay,0,1023,10,800)){
+      move_ccw(map(ins_delay,0,1023,10,800));
       break;
     }
     else if(digitalRead(button)==HIGH){
