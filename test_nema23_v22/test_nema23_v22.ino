@@ -2,12 +2,13 @@
 //USE MICROSTEP 4 (1.8°/step )= (0.45°/step)
 //common cathode connection
 //analog and digital pins from 0 to 3.3 v
-
+#include <Wire.h>
 // defines pins numbers
 const int stepPin = 5; 
 const int dirPin = 6; 
 const int enPin = 8;
 const int buzzer_pin=2;
+const int ir_led=1;
 volatile int steps_taken=0; //steps taken from origin
 const int button=12;
 unsigned long now_time, prev_time;
@@ -16,11 +17,13 @@ unsigned long now_time, prev_time;
 volatile int c=2;
 const int s1_pin=10;
 const int s3_pin=9;
+const int insp_valve=50;
+const int esp_valve=51;
 
 //first parameter
 volatile int vol_steps;
 const int vol_interrupt_pin=4;
-const int vol_pot= A0;
+const int vol_pot= A1;
 
 //second parameter
 volatile int bpm_delay;
@@ -42,14 +45,13 @@ void bpm_interrupt(){
 void vol_interrupt(){
   vol_steps=analogRead(vol_pot);  
   buzz(1);
-  //Serial.print("read value= "); Serial.println(ins_delay);
+  //Serial.print("read value= "); Serial.println(vol_steps);
   Serial.print("vol steps= "); Serial.println(vol_steps);//chek mapping values
 }
 
 void homing(){
   steps_taken=0;
 }
-
 
 void buzz(int seconds){
     for(int i=0; i<seconds; i++){
@@ -60,22 +62,35 @@ void buzz(int seconds){
     }
 }
 
-
+int k=0;
+int values[4];//stores i2c received data
+void llegaDato(int bytes){
+  //int k=0;
+  while(Wire.available()){
+    values[k]=int(Wire.read());
+    k=(k+1)%4;
+  }
+}
 
 void setup() {
   Serial.begin(9600);
   analogReadResolution(10);
+  Wire.begin(2);//slave 2
+  Wire.onReceive(llegaDato);
   pinMode(buzzer_pin,OUTPUT);
   digitalWrite(buzzer_pin,LOW);
   pinMode(s1_pin,INPUT);
   pinMode(s3_pin,INPUT);
   pinMode(vol_interrupt_pin,INPUT);
   pinMode(bpm_interrupt_pin,INPUT);
-  // Sets the two pins as Outputs
   pinMode(stepPin,OUTPUT); 
   pinMode(dirPin,OUTPUT);
   pinMode(button,INPUT);
   pinMode(enPin,OUTPUT);
+  pinMode(insp_valve,OUTPUT);
+  pinMode(esp_valve,OUTPUT);
+  digitalWrite(insp_valve,LOW);
+  digitalWrite(esp_valve,LOW);
   digitalWrite(enPin,LOW);
   attachInterrupt(digitalPinToInterrupt(vol_interrupt_pin),vol_interrupt,RISING);
   attachInterrupt(digitalPinToInterrupt(bpm_interrupt_pin),bpm_interrupt,RISING);
@@ -83,17 +98,18 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(s3_pin),ratio_3, RISING);
   vol_steps=500;
   //attachInterrupt(digitalPinToInterrupt(12),homing,RISING);
-  //digitalWrite(dirPin,LOW);
-//  for(int s=0; s<800; s++){//searching for home
-//    digitalWrite(stepPin,HIGH);
-//    delayMicroseconds(500);
-//    digitalWrite(stepPin,LOW);
-//    delayMicroseconds(500);
-//    if(digitalRead(button)==HIGH){
-//      digitalWrite(button,LOW);
-//      break;
-//    }
-//  }
+  digitalWrite(dirPin,LOW);//moving in cw direction
+  for(int s=0; s<1000; s++){//searching for home
+    digitalWrite(stepPin,HIGH);
+    delayMicroseconds(500);
+    digitalWrite(stepPin,LOW);
+    delayMicroseconds(500);
+    if(digitalRead(ir_led)==HIGH){
+      //digitalWrite(button,LOW);
+      steps_taken=0;
+      break;
+    }
+  }
   now_time=millis();
 }
 

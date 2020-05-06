@@ -49,7 +49,7 @@ void setup() {
   uint16_t identifier = tft.readID();
   tft.begin(identifier);
   
-  tft.setRotation(1);
+  tft.setRotation(3);
   width=tft.width();
   height=tft.height();
   tft.fillScreen(BLACK);
