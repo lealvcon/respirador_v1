@@ -2,6 +2,9 @@
 //USE MICROSTEP 4 (1.8°/step )= (0.45°/step)
 //common cathode connection
 //analog and digital pins from 0 to 3.3 v
+
+//si al momento de actualizar vol_steps es mayor que los actuales que pasa?
+
 #include <Wire.h>
 // defines pins numbers
 const int stepPin = 5; 
@@ -74,9 +77,10 @@ void llegaDato(int bytes){
 
 void setup() {
   Serial.begin(9600);
-  analogReadResolution(10);
+  analogReadResolution(12);
   Wire.begin(2);//slave 2
   Wire.onReceive(llegaDato);
+  pinMode(ir_led,INPUT);
   pinMode(buzzer_pin,OUTPUT);
   digitalWrite(buzzer_pin,LOW);
   pinMode(s1_pin,INPUT);
@@ -98,6 +102,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(s3_pin),ratio_3, RISING);
   vol_steps=500;
   //attachInterrupt(digitalPinToInterrupt(12),homing,RISING);
+  Serial.println("Searching home");
   digitalWrite(dirPin,LOW);//moving in cw direction
   for(int s=0; s<1000; s++){//searching for home
     digitalWrite(stepPin,HIGH);
@@ -106,6 +111,7 @@ void setup() {
     delayMicroseconds(500);
     if(digitalRead(ir_led)==HIGH){
       //digitalWrite(button,LOW);
+      Serial.println("home");
       steps_taken=0;
       break;
     }
@@ -142,21 +148,21 @@ void move_cw(int steps){
 //      move_ccw(400);
 //      break;
 //    }
-    if(steps_taken==map(vol_steps,0,1023,10,800)){
-      move_ccw(map(vol_steps,0,1023,10,800));
+    if(steps_taken==map(vol_steps,0,4095,100,500)){
+      move_ccw(map(vol_steps,0,4095,100,500));
       break;
     }
   }
 }
 
 void loop() {
-  
+    Serial.print("led= "); Serial.println(digitalRead(ir_led));
     if(digitalRead(s1_pin)==LOW && digitalRead(s3_pin)==LOW){c=2;}
     Serial.print("c= "); Serial.println(c);
     Serial.print("steps_taken= "); Serial.println(steps_taken);
     Serial.print("vol_steps= "); Serial.println(vol_steps);
     move_cw(800);
     //delay(10);
-    delay(map(bpm_delay,0,1023,1,1000));//controlar tiempo entre inspiraciÃ³n y espiraciÃ³n?
+    delay(map(bpm_delay,0,4095,1,1000));//controlar tiempo entre inspiraciÃ³n y espiraciÃ³n?
 
 }
