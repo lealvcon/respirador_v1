@@ -6,12 +6,13 @@
 //si al momento de actualizar vol_steps es mayor que los actuales que pasa?
 
 #include <Wire.h>
+
 // defines pins numbers
 const int stepPin = 5; 
 const int dirPin = 6; 
 const int enPin = 8;
 const int buzzer_pin=2;
-const int ir_led=1;
+const int ir_led=22;
 volatile int steps_taken=0; //steps taken from origin
 const int button=12;
 unsigned long now_time, prev_time;
@@ -67,19 +68,20 @@ void buzz(int seconds){
 
 int k=0;
 int values[4];//stores i2c received data
-void llegaDato(int bytes){
+void llegaDato(int i){
   //int k=0;
   while(Wire.available()){
     values[k]=int(Wire.read());
-    k=(k+1)%4;
+    k=(k+1)%2;
   }
 }
 
 void setup() {
-  Serial.begin(9600);
-  analogReadResolution(12);
+
   Wire.begin(2);//slave 2
   Wire.onReceive(llegaDato);
+  Serial.begin(9600);
+  analogReadResolution(12);
   pinMode(ir_led,INPUT);
   pinMode(buzzer_pin,OUTPUT);
   digitalWrite(buzzer_pin,LOW);
@@ -102,7 +104,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(s3_pin),ratio_3, RISING);
   vol_steps=500;
   //attachInterrupt(digitalPinToInterrupt(12),homing,RISING);
-  Serial.println("Searching home");
+  //Serial.println("Searching home");
   digitalWrite(dirPin,LOW);//moving in cw direction
   for(int s=0; s<1000; s++){//searching for home
     digitalWrite(stepPin,HIGH);
@@ -111,7 +113,7 @@ void setup() {
     delayMicroseconds(500);
     if(digitalRead(ir_led)==HIGH){
       //digitalWrite(button,LOW);
-      Serial.println("home");
+      //Serial.println("home");
       steps_taken=0;
       break;
     }
@@ -156,13 +158,13 @@ void move_cw(int steps){
 }
 
 void loop() {
-    Serial.print("led= "); Serial.println(digitalRead(ir_led));
+    //Serial.print("led= "); Serial.println(digitalRead(ir_led));
     if(digitalRead(s1_pin)==LOW && digitalRead(s3_pin)==LOW){c=2;}
     Serial.print("c= "); Serial.println(c);
     Serial.print("steps_taken= "); Serial.println(steps_taken);
     Serial.print("vol_steps= "); Serial.println(vol_steps);
+    Serial.print("i2c val= "); Serial.println(values[1]);
     move_cw(800);
     //delay(10);
     delay(map(bpm_delay,0,4095,1,1000));//controlar tiempo entre inspiraciÃ³n y espiraciÃ³n?
-
 }

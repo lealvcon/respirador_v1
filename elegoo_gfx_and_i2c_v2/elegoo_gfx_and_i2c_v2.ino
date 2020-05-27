@@ -95,26 +95,26 @@ void loop() {
   //Display parametro 1
   tft.fillRect(0,height*.8,width,height*.2,color);//keeps from overwriting in screen
   tft.setCursor(1,height*.87); tft.setTextSize(2);
-  tft.print("v1="); tft.print(my_values[0]);
-  
+  tft.print("P="); tft.print(my_values[0]);
+  Serial.print("v0= "); Serial.println(my_values[0]);
   //Display parametro 2
   tft.setCursor(1+width*.33,height*.87); tft.setTextSize(2);
-  tft.print("v2="); tft.print(my_values[1]);
-  
+  tft.print("F="); tft.print(my_values[1]);
+  Serial.print("v1= "); Serial.println(my_values[1]);
   //Display parametro 3
   //tft.fillRect(width*.66,height*.8,width*.33,height*.2,RED);
 
   if(my_values[2]==1){
     tft.fillRect(0,0,width,height*.15,color);
     tft.setCursor(0,0); tft.setTextSize(3);
-    tft.println("V1");
+    tft.println("Presion");
     y2=constrain(my_values[0]*.5/-1+height*.4, height*.15, height*.75);
     tft.drawLine(x1,y1,x2,y2,RED);
   }
   else{
     tft.fillRect(0,0,width,height*.15,color);
     tft.setCursor(0,0); tft.setTextSize(3);
-    tft.println("V2");
+    tft.println("Flujo");
     y2=constrain(my_values[1]*.5/-1+height*.4, height*.15, height*.75);
     tft.drawLine(x1,y1,x2,y2,CYAN);
   }
